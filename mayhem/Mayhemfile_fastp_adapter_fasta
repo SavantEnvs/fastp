@@ -1,0 +1,17 @@
+# Mayhem target `fastp-adapter-fasta` — adapter FASTA (`fastp --adapter_fasta`): the input is an adapter FASTA, a NUL byte, then FASTQ reads (built-in reads if there is no NUL); covers FastaReader and multi-adapter trimming.
+#
+# File-input target: one fastp process per input (fastp exit()s on malformed input and runs
+# reader/worker/writer threads with global state, so an in-process harness would not work). Built
+# with ASan+UBSan (halting) + SanCov by mayhem/build.sh. Outputs go to /dev/null (spelled
+# differently per output: fastp refuses two outputs with the same name). Hangs are part of the bug
+# class (upstream fixed several reader/writer hangs), so Mayhem's per-exec timeout reports them.
+project: savantenvs/fastp
+target: fastp-adapter-fasta
+
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/fastp-adapter-fasta/testsuite
+
+cmds:
+  - cmd: /mayhem/mayhem/build/fastp_adapter_fasta @@
+    timeout: 10

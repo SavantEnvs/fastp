@@ -1,0 +1,17 @@
+# Mayhem target `fastp-gz` — gzip/BGZF-compressed FASTQ (`fastp -i <file>.fq.gz`): the isa-l inflate loop, multi-member gzip, the BGZF reader and buffer refill. fastp picks the decompressor by file name, so mayhem/fastp_fuzz_main.cpp stages the input as $TMPDIR/*.fq.gz and calls fastp's own main.
+#
+# File-input target: one fastp process per input (fastp exit()s on malformed input and runs
+# reader/worker/writer threads with global state, so an in-process harness would not work). Built
+# with ASan+UBSan (halting) + SanCov by mayhem/build.sh. Outputs go to /dev/null (spelled
+# differently per output: fastp refuses two outputs with the same name). Hangs are part of the bug
+# class (upstream fixed several reader/writer hangs), so Mayhem's per-exec timeout reports them.
+project: savantenvs/fastp
+target: fastp-gz
+
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/fastp-gz/testsuite
+
+cmds:
+  - cmd: /mayhem/mayhem/build/fastp_gz @@
+    timeout: 10

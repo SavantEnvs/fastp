@@ -1,0 +1,5 @@
+# Keep the whole repo (incl. .git); drop only local build output.
+mayhem/build/
+obj/
+*.o
+*.d

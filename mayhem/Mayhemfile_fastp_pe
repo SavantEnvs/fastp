@@ -1,0 +1,17 @@
+# Mayhem target `fastp-pe` — paired-end, two files (`fastp -i R1 -I R2`): the input is R1 FASTQ, a NUL byte, then R2 FASTQ; mayhem/fastp_fuzz_main.cpp hands the halves to fastp's own main. Covers the two reader threads, R1/R2 count/length mismatch handling, PE adapter detection, overlap/merge/correction.
+#
+# File-input target: one fastp process per input (fastp exit()s on malformed input and runs
+# reader/worker/writer threads with global state, so an in-process harness would not work). Built
+# with ASan+UBSan (halting) + SanCov by mayhem/build.sh. Outputs go to /dev/null (spelled
+# differently per output: fastp refuses two outputs with the same name). Hangs are part of the bug
+# class (upstream fixed several reader/writer hangs), so Mayhem's per-exec timeout reports them.
+project: savantenvs/fastp
+target: fastp-pe
+
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/fastp-pe/testsuite
+
+cmds:
+  - cmd: /mayhem/mayhem/build/fastp_pe @@
+    timeout: 10

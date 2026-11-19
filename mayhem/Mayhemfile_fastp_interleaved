@@ -1,0 +1,17 @@
+# Mayhem target `fastp-interleaved` — paired-end interleaved FASTQ (`fastp --interleaved_in -i @@`): FastqReaderPair interleaved mode, PairEndProcessor, overlap analysis, base correction, read merging and the overlapped/merged/unpaired/failed writers.
+#
+# File-input target: one fastp process per input (fastp exit()s on malformed input and runs
+# reader/worker/writer threads with global state, so an in-process harness would not work). Built
+# with ASan+UBSan (halting) + SanCov by mayhem/build.sh. Outputs go to /dev/null (spelled
+# differently per output: fastp refuses two outputs with the same name). Hangs are part of the bug
+# class (upstream fixed several reader/writer hangs), so Mayhem's per-exec timeout reports them.
+project: savantenvs/fastp
+target: fastp-interleaved
+
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/fastp-interleaved/testsuite
+
+cmds:
+  - cmd: /mayhem/mayhem/build/fastp --interleaved_in -i @@ -o /dev/null -O //dev/null -m --merged_out /dev//null --overlapped_out /dev/./null --unpaired1 ///dev/null --failed_out /dev///null -c -p -x -g -y -U --umi_loc per_read --umi_len 4 --dont_eval_duplication -w 1 -j /dev/null -h /dev/null
+    timeout: 10

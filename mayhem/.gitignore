@@ -1,0 +1,2 @@
+# build.sh output (objects + binaries); removed by `git clean -ffdX` and rebuilt by build.sh
+/build/
